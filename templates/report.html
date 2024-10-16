@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ report_name }}</title>
+    <script src="https://cdn.jsdelivr.net/npm/powerbi-client@2.18.6/dist/powerbi.min.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        #reportContainer {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="reportContainer"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 确认 Power BI 客户端库是否加载
+            if (!window['powerbi-client']) {
+                console.error('Power BI 客户端库未正确加载');
+                return;
+            }
+
+            const models = window['powerbi-client'].models;
+            const groupId = '{{ group_id }}';
+            const reportId = '{{ report_id }}';
+
+            try {
+                let response = await fetch('/embed_info', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ report_id: reportId, group_id: groupId })
+                });
+                let embedInfo = await response.json();
+
+                let reportContainer = document.getElementById('reportContainer');
+                let reportConfig = {
+                    type: 'report',
+                    tokenType: models.TokenType.Embed,
+                    accessToken: embedInfo.embed_token,
+                    embedUrl: embedInfo.embed_url,
+                    id: reportId,
+                    permissions: models.Permissions.All,
+                    settings: {
+                        filterPaneEnabled: false,
+                        navContentPaneEnabled: true
+                    }
+                };
+                let report = powerbi.embed(reportContainer, reportConfig);
+
+                window.addEventListener('resize', function() {
+                    reportContainer.style.width = window.innerWidth + 'px';
+                    reportContainer.style.height = window.innerHeight + 'px';
+                    report.resize();
+                });
+            } catch (error) {
+                console.error('嵌入报表时出错:', error);
+            }
+        });
+    </script>
+</body>
+</html>

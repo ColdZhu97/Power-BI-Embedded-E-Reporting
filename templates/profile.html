@@ -1,0 +1,5 @@
+{% extends "home.html" %}
+
+{% block content %}
+    <h1>Logged in as: {{ user["displayName"] }} ({{ user["userPrincipalName"] }})</h1>
+{% endblock %}

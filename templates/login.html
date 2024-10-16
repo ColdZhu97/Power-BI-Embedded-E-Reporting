@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
+        .container-box {
+            text-align: center;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            width: 400px;
+        }
+        .container-box img {
+            width: 150px;
+            margin-bottom: 20px;
+        }
+        .container-box h2 {
+            margin-bottom: 20px;
+        }
+        .form-group {
+            position: relative;
+            margin-bottom: 20px;
+            text-align: left; /* 将表单字段靠左对齐 */
+        }
+        .form-group input {
+            padding-left: 40px;
+        }
+        .form-group .input-icon {
+            position: absolute;
+            top: 20px;
+            left: 10px;
+            transform: translateY(-50%);
+            color: #ced4da;
+        }
+        .change-password-form .form-group input {
+            padding-left: 40px;
+            padding-top: 10px; /* 添加填充以调整输入框内容的位置 */
+            padding-bottom: 10px; /* 添加填充以调整输入框内容的位置 */
+        }
+        .change-password-form .form-group .input-icon {
+            top: 70%; /* 调整此值以向下对齐图标 */
+        }
+        .container-box .btn {
+            width: 100%;
+        }
+        .d-none {
+            display: none;
+        }
+        .form-text {
+            display: block;
+            margin-top: 5px; /* 调整此值以控制备注与输入框的间距 */
+            margin-bottom: 10px;
+            color: red; /* 将字体颜色设置为红色 */
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container-box login-container">
+        <a class="navbar-brand" href="#">
+            <img src="{{ url_for('static', filename='Jabillogo.png') }}" alt="eReporting System">
+            <span class="brand-text">eReporting System</span>
+        </a>
+        <form action="/login" method="post">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ messages[0] }}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            <div class="form-group">
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Please enter your Login Account..." required>
+                <small class="form-text">在此输入你的NTID</small> <!-- 添加备注 -->
+            </div>
+            <div class="form-group">
+                <i class="fas fa-key input-icon"></i>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Please enter your Login Password..." required>
+                <small class="form-text">默认密码为123456</small> <!-- 添加备注 -->
+            </div>
+            <button type="submit" class="btn btn-primary">登录</button>
+        </form>
+        <button class="btn btn-secondary mt-3" onclick="showChangePasswordForm()">修改密码</button>
+    </div>
+
+    <div class="container-box form-container d-none change-password-form" id="changePasswordFormContainer">
+        <a class="navbar-brand" href="#">
+            <img src="{{ url_for('static', filename='Jabillogo.png') }}" alt="eReporting System">
+            <span class="brand-text">eReporting System</span>
+        </a>
+        <h2>修改密码</h2>
+        <form id="changePasswordForm" onsubmit="changePassword(event)">
+            <div class="form-group">
+                <label for="changeUsername">NTID</label>
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" class="form-control" id="changeUsername" name="username" placeholder="Please enter your Username..." required>
+            </div>
+            <div class="form-group">
+                <label for="currentPassword">当前密码</label>
+                <i class="fas fa-lock input-icon"></i>
+                <input type="password" class="form-control" id="currentPassword" name="current_password" placeholder="Please enter your Current Password..." required>
+            </div>
+            <div class="form-group">
+                <label for="newPassword">新密码</label>
+                <i class="fas fa-key input-icon"></i>
+                <input type="password" class="form-control" id="newPassword" name="new_password" placeholder="Please enter your New Password..." required>
+            </div>
+            <button type="submit" class="btn btn-success">修改密码</button>
+            <button type="button" class="btn btn-secondary" onclick="hideChangePasswordForm()">取消</button>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        function showChangePasswordForm() {
+            document.getElementById('changePasswordFormContainer').classList.remove('d-none');
+            document.querySelector('.login-container').classList.add('d-none');
+        }
+
+        function hideChangePasswordForm() {
+            document.getElementById('changePasswordFormContainer').classList.add('d-none');
+            document.querySelector('.login-container').classList.remove('d-none');
+        }
+
+        function changePassword(event) {
+            event.preventDefault();
+
+            var formData = {
+                username: document.getElementById('changeUsername').value,
+                current_password: document.getElementById('currentPassword').value,
+                new_password: document.getElementById('newPassword').value
+            };
+
+            $.ajax({
+                url: '/change_password',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function(response) {
+                    alert(response.message);
+                    if (response.success) {
+                        hideChangePasswordForm();
+                    }
+                },
+                error: function(error) {
+                    console.error('修改密码出错:', error);
+                    alert('修改密码出错，请重试。');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

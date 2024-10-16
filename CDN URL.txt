@@ -1,0 +1,1 @@
+https://cdn.jsdelivr.net/npm/powerbi-client@2.18.6/dist/powerbi.min.js

@@ -1,0 +1,1436 @@
+﻿<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Quality E-Report</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <style>
+        html,             
+        body {
+            padding: 0px;
+            height: 100%;
+        }
+        .birs-bg {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            background: url(../static/2.jpg) no-repeat;
+            background-size: 100% 100%;
+            opacity: 0.9;
+            z-index: 0;
+        }
+        .birs-bg-m {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            background: url(../static/1.jpg) no-repeat; /* 设置第二张图片 */
+            background-size: 100% 100%;
+            opacity: 0.15; /* 设置透明度 */
+            z-index: 1;
+        }
+        /* .birs-bg-mark {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            background-color: rgba(207, 204, 204, 0.541);
+            background-size: 100% 100%;
+            z-index: 1;
+        } */
+        .overlay {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.7);
+            background-size: 100%;
+            z-index: 1;
+        }
+        .report-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto; /* Center the image */
+            display: block;
+        }
+        .report-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+        .report-item {
+            position: relative;
+            margin: 10px; /* 调整容器之间的间距为10px */
+            text-align: center;
+            width: 180px;
+            height: 210px;
+            padding: 10px;
+            background-color: rgba(214, 212, 212, 0);
+            border-radius: 10px;
+            box-shadow: 0 8px 12px rgba(255, 255, 255, 0);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .refresh-button {
+            position: absolute;
+            top: 5px; /* 调整位置 */
+            right: 5px; /* 调整位置 */
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            display: none;
+            z-index: 10; /* 确保按钮在最上层 */
+        }
+        .report-item:hover .refresh-button {
+            display: block;
+        }
+        .refresh-status {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.9); /* 使用浅色背景 */
+            color: #333; /* 深色字体 */
+            padding: 8px 16px; /* 增加内边距 */
+            border-radius: 12px; /* 减小圆角 */
+            display: none;
+            z-index: 10;
+            font-size: 14px; /* 缩小字体 */
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* 减少阴影强度 */
+            transition: all 0.3s ease-in-out;
+        }
+
+        .show-status {
+            display: block;
+            animation: fadeIn 0.5s, fadeOut 0.5s 4.5s; /* 淡入淡出效果 */
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        .refresh-button-container {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip {
+            visibility: hidden;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* 显示在按钮的上方 */
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%; /* 箭头指向下方 */
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        .refresh-button-container:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .report-item:hover {
+            transform: translateY(-10px);   
+            box-shadow: 0 10px 20px rgba(230, 188, 2, 0.877);
+            filter: brightness(1.4); /* 增加亮度 */
+
+        }
+        .report-item:hover .details-button {
+            opacity: 1;
+        }
+        .report-icon-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .report-text {
+            margin-top: 15px; /* 调整图片和文字之间的间距 */
+            font-size: 1em;
+            /*font-weight: bold;*/
+            color: hsl(0, 0%, 100%);
+            margin-top: 5px;
+        }
+        .refresh-button img {
+            width: 30px;
+            height: 30px;
+            transition: transform 0.3s ease; /* 添加过渡效果 */
+        }
+
+        .refresh-button img:hover {
+            transform: rotate(360deg); /* 鼠标悬停时旋转图标 */
+            filter: brightness(1.4); /* 增加亮度 */
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .button-container button {
+            margin: 0 5px;
+        }
+        .form-container {
+            margin-top: 20px;
+            display: none;
+            padding: 20px;
+            border: 1px solid #ced4da;
+            border-radius: .25rem;
+            background-color: #fff;
+        }
+        .navbar-custom {
+            background-color: #000;
+            color: #fff;
+            z-index: 10;
+            position: relative;
+        }
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
+            color: #fff;
+        }
+        .navbar-custom .nav-link:hover {
+            color: #ccc;
+        }
+        .container-fluid {
+            position: relative;
+            z-index: 2;
+            padding-left: 20px;
+        }
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+        }
+        .navbar-brand img {
+            height: 40px;
+            margin-right: 10px;
+        }
+        .navbar-brand .brand-text {
+            font-size: 1.5rem;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            color: #fff;
+        }
+        .user-info img {
+            border-radius: 50%;
+            height: 30px;
+            width: 50px;
+            margin-right: 10px;
+        }
+        .user-info span {
+            margin-right: 5px;
+            font-size: 2em;
+        }
+        .hello-text {
+            margin-left: 15px;
+            font-size: 2em;
+            font-weight: bold;
+        }
+        .custom-select-container {
+            position: relative;
+            width: 100%;
+        }
+        .custom-select {
+            width: 100%;
+            height: calc(1.5em + .75rem + 2px);
+            padding: .375rem 1.75rem .375rem .75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #495057;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            border-radius: .25rem;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            position: relative;
+        }
+        .custom-select img {
+            width: 24px;
+            height: 24px;
+            position: absolute;
+            top: 50%;
+            left: 8px;
+            transform: translateY(-50%);
+        }
+        .custom-options {
+            display: none;
+            position: absolute;
+            width: 100%;
+            background-color: #fff;
+            border: 1px solid #ced4da;
+            border-radius: .25rem;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .custom-option {
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            flex: 0 0 20%;
+            box-sizing: border-box;
+        }
+        .custom-option img {
+            width: 40px;
+            height: 40px;
+            margin-right: 0;
+        }
+        .form-row.inline {
+            display: flex;
+            flex-wrap: nowrap;
+        }
+        .form-group.inline {
+            flex: 1;
+            margin-right: 15px;
+        }
+        .form-group.inline:last-child {
+            margin-right: 0;
+        }
+        .d-none {
+            display: none;
+        }
+        .navbar-nav.ml-auto {
+            display: flex;
+            align-items: center;
+        }
+        .navbar-nav .btn {
+            margin-left: 5px;
+        }
+        .navbar-nav .btn-logout {
+            background-color: transparent;
+            color: #fff;
+            border: none;
+        }
+        .table {
+            width: 100%;
+            margin-bottom: 1rem;
+            color: #212529;
+            background-color: transparent;
+            border-collapse: collapse;
+        }
+        .table th,
+        .table td {
+            padding: .75rem;
+            vertical-align: top;
+            border-top: 1px solid #dee2e6;
+        }
+        .table thead th {
+            vertical-align: bottom;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .table tbody + tbody {
+            border-top: 2px solid #dee2e6;
+        }
+        .table-bordered {
+            border: 1px solid #dee2e6;
+        }
+        .table-bordered th,
+        .table-bordered td {
+            border: 1px solid #dee2e6;
+        }
+        .table-bordered thead th,
+        .table-bordered thead td {
+            border-bottom-width: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="birs-bg"></div>
+    <div class="birs-bg-mark"></div>
+    <div class="birs-bg-m"></div>
+    <div class="container-fluid"></div>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <a class="navbar-brand" href="#">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="eReporting System">
+            <span class="brand-text">eReporting System</span>
+        </a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav mr-auto"></ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <div class="user-info" id="userInfo">
+                        <button class="btn btn-primary d-none" id="addButton" onclick="showUploadForm()">新增</button>
+                        <button class="btn btn-secondary d-none" id="editButton">编辑</button>
+                        <!-- <button class="btn btn-secondary d-none" id="cancelEditButton">取消编辑</button> -->
+                        <button class="btn btn-secondary d-none" id="manageButton">管理权限</button>
+                        <button class="btn btn-secondary d-none" id="publishButton">发布报表</button>
+                        {% if user_email %}
+                            <span class="hello-text">Hello {{ user_email }}</span>
+                            <button class="btn btn-logout" onclick="logout()">登出</button>
+                        {% else %}
+                            <button class="btn btn-primary" onclick="window.location.href='{{ url_for('login') }}'">登录</button>
+                        {% endif %}
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mt-5"></div>
+        <div id="uploadFormContainer" class="form-container">
+            <form id="uploadForm" onsubmit="uploadReport(event)">
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="groupId">工作区 ID</label>
+                        <input readonly="text" id="groupId" name="group_id" class="form-control" required>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="reportId">报表 ID</label>
+                        <input readonly="text" id="reportId" name="report_id" class="form-control" required>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="datasetId">数据集 ID</label>
+                        <input readonly="text" id="datasetId" name="dataset_id" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="reportName">报表名称</label>
+                        <input type="text" id="reportName" name="report_name" class="form-control" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="reportUrl">报表网址</label>
+                        <input type="text" id="reportUrl" name="report_url" class="form-control" onblur="parseReportUrl()">
+                    </div>
+                </div>
+                <div class="form-row inline">
+                    <div class="form-group inline">
+                        <label for="refreshFrequencyValue">刷新频率值</label>
+                        <input type="number" id="refreshFrequencyValue" name="refresh_frequency_value" class="form-control" required>
+                    </div>
+                    <div class="form-group inline">
+                        <label for="refreshFrequencyUnit">刷新频率单位</label>
+                        <select id="refreshFrequencyUnit" name="refresh_frequency_unit" class="form-control" required>
+                           <!--  <option value="minutes">分钟</option> -->
+                            <option value="hours">小时</option>
+                            <option value="days">天</option>
+                        </select>
+                    </div>
+                    <div class="form-group inline">
+                        <label for="reportIcon">选择图标</label>
+                        <div class="custom-select-container">
+                            <div class="custom-select" id="customSelect">
+                                <img id="selectedIcon">
+                                <input type="hidden" id="reportIcon" name="report_icon">
+                            </div>
+                            <div class="custom-options" id="customOptions">
+                                <!-- 选项内容将通过JavaScript动态填充 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success">上传</button>
+                <button type="button" class="btn btn-secondary" onclick="hideForm()">取消</button>
+            </form>
+        </div>
+        <div id="settingsFormContainer" class="form-container">
+            <form id="settingsForm" onsubmit="uploadSetting(event)">
+                <div class="form-group">
+                    <label for="settingKey">设置键</label>
+                    <input type="text" id="settingKey" name="key" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="settingValue">设置值</label>
+                    <input type="text" id="settingValue" name="value" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-success">上传设置</button>
+                <button type="button" class="btn btn-secondary" onclick="hideForm()">取消</button>
+            </form>
+        </div>
+        <div id="updateFormContainer" class="form-container">
+            <form id="updateForm" onsubmit="updateReport(event)">
+                <input type="hidden" id="updateReportId" name="report_id">
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="updateGroupId">工作区 ID</label>
+                        <input readonly="text" id="updateGroupId" name="group_id" class="form-control" required>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="updateReportIdInput">报表 ID</label>
+                        <input readonly="text" id="updateReportIdInput" name="report_id_input" class="form-control" required>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="updateDatasetId">数据集 ID</label>
+                        <input readonly="text" id="updateDatasetId" name="dataset_id" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="updateReportName">报表名称</label>
+                        <input type="text" id="updateReportName" name="report_name" class="form-control" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="updateUrl">报表网址</label>
+                        <input type="text" id="updateUrl" name="report_url" class="form-control" onblur="parseUpdateReportUrl()">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="updateRefreshFrequencyValue">刷新频率值</label>
+                        <input type="number" id="updateRefreshFrequencyValue" name="refresh_frequency_value" class="form-control" required>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="updateRefreshFrequencyUnit">刷新频率单位</label>
+                        <select id="updateRefreshFrequencyUnit" name="refresh_frequency_unit" class="form-control" required>
+                            <option value="minutes">分钟</option>
+                            <option value="hours">小时</option>
+                            <option value="days">天</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="updateReportIcon">选择图标</label>
+                        <div class="custom-select-container">
+                            <div class="custom-select" id="updateCustomSelect">
+                                <img id="updateSelectedIcon" src="" alt="选择图标">
+                                <input type="hidden" id="updateReportIcon" name="report_icon">
+                            </div>
+                            <div class="custom-options" id="updateCustomOptions">
+                                <!-- 选项内容将通过JavaScript动态填充 -->
+                            </div>
+                        </div>
+                    </div>                                    
+                </div>
+                <button type="submit" class="btn btn-success">保存修改</button>
+                <button type="button" class="btn btn-secondary" onclick="hideForm()">取消</button>
+            </form>
+        </div>
+        <div class="report-container">
+            {% for report in reports %} 
+                <div class="report-item">
+                    <div class="report-overlay"></div>
+                    {% set icon_path = report.icon_path.replace('static/', '') %}
+                    <img src="{{ url_for('static', filename=icon_path) }}" class="report-icon" onclick="openReport('{{ report.group_id }}', '{{ report.report_id }}')">
+                    <p class="report-text">{{ report.name }}</p>
+                    <button class="refresh-button" onclick="refreshReport('{{ report.group_id }}', '{{ report.dataset_id }}')">
+                        <img src="{{ url_for('static', filename='refresh3_icon-64.png') }}" alt="刷新"width="30" height="30" title="点击刷新数据">
+                    </button>
+                    <div class="tooltip">点击刷新数据</div>
+                    <div class="refresh-status" id="status-{{ report.dataset_id }}">
+                        刷新中...
+                    </div>
+                    <button class="btn btn-primary edit-button d-none" onclick="showUpdateForm('{{ report.id }}', '{{ report.name }}', '{{ report.group_id }}', '{{ report.report_id }}', '{{ report.refresh_frequency_value }}', '{{ report.refresh_frequency_unit }}', '{{ report.icon_path }}', '{{ report.dataset_id }}')">修改</button>
+                    <button class="btn btn-danger edit-button d-none" onclick="deleteReport('{{ report.id }}')">删除</button>
+                </div>
+            {% endfor %}
+        </div>
+        <div id="permissionsContainer" class="form-container">
+            <h2>权限管理</h2>
+            <form id="addPermissionForm" onsubmit="addPermission(event)">
+                <div class="form-row">
+                    <div class="form-group col-md-2">
+                        <label for="permissionEmail">邮箱</label>
+                        <input type="email" id="permissionEmail" name="email" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group col-md-1">
+                        <label for="permissionAdd">新增权限</label>
+                        <select id="permissionAdd" name="can_add" class="form-control">
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group col-md-1">
+                        <label for="permissionEdit">编辑权限</label>
+                        <select id="permissionEdit" name="can_edit" class="form-control">
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group col-md-1">
+                        <label for="permissionManage">管理权限</label>
+                        <select id="permissionManage" name="can_manage" class="form-control">
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group col-md-1">
+                        <label for="permissionPublish">发布报表权限</label>
+                        <select id="permissionPublish" name="can_publish" class="form-control">
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group col-md-2">
+                        <button type="submit" class="btn btn-success" style="margin-top: 30px;">添加权限</button>
+                    </div>                
+                </div>
+            </form>         
+            <table class="table mt-3 table-bordered" id="permissionsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>新增权限</th>
+                        <th>编辑权限</th>
+                        <th>管理权限</th>
+                        <th>发布权限</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="permissionsTableBody">
+                    <!-- 权限表内容将通过JavaScript动态填充 -->
+                </tbody>
+            </table>                    
+            <!-- 编辑权限表单 -->
+            <div id="editPermissionFormContainer" class="form-container" style="display: none;">
+                <form id="editPermissionForm" onsubmit="updatePermission(event)">
+                    <input type="hidden" id="editPermissionId">
+                    <div class="form-row">
+                        <div class="form-group col-md-2">
+                        <label for="editPermissionEmail">邮箱</label>
+                        <input type="email" id="editPermissionEmail" name="email" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group col-md-1">
+                            <label for="editPermissionAdd">新增权限</label>
+                            <select id="editPermissionAdd" name="can_add" class="form-control">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group col-md-1">
+                            <label for="editPermissionEdit">编辑权限</label>
+                            <select id="editPermissionEdit" name="can_edit" class="form-control">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group col-md-1">
+                            <label for="editPermissionManage">管理权限</label>
+                            <select id="editPermissionManage" name="can_manage" class="form-control">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group col-md-1">
+                            <label for="editPermissionPublish">发布报表权限</label>
+                            <select id="editPermissionPublish" name="can_publish" class="form-control">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group col-md-2">
+                            <button type="submit" class="btn btn-success" style="margin-top: 30px;">保存</button>
+                            <button type="button" class="btn btn-secondary" style="margin-top: 30px;" onclick="hideEditForm()">取消</button>
+                        </div>
+                    </div>
+                </form>
+            </div>                     
+        </div>
+        <!-- 发布模态框 -->
+        <div id="publishModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <form id="publishForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="workspaceSelect">工作区</label>
+                        <select id="workspaceSelect" name="workspace_id" class="form-control" required></select>
+                    </div>
+                    <div class="form-group">
+                        <!--<label for="overwriteOption">覆盖同名报表</label>
+                        <input type="checkbox" id="overwriteOption" name="overwrite">-->
+                    </div>
+                    <div class="form-group">
+                        <label for="pbixFile">选择文件</label>
+                        <input type="file" id="pbixFile" name="pbix_file" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">发布</button>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>报表名称</th>
+                                <th>状态</th>
+                                <th>报表URL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="publishStatusTableBody">
+                            <!-- 发布状态的行将通过JavaScript动态填充 -->
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+        </div>
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000; /* 确保模态框在页面最上层 */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+        .modal-header {
+            margin-top: 20px; /* 增加顶部间距 */
+        }
+        .modal-content {
+            position: relative;
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+        /* For the placeholder in the select element */
+        select:invalid {
+            color: #888888; /* Adjust the color to be lighter */
+            font-size: 0.9em; /* Adjust the font size */
+        }
+
+        /* For the placeholder in the select element */
+        .placeholder-option {
+            color: #888888; /* 调整颜色 */
+            font-size: 1.2em; /* 调整提示文字的字体大小 */
+        }
+
+        /* Ensure the options have a consistent style */
+        select option {
+            font-size: 1.2em; /* 调整选项字体大小 */
+            color: #000000; /* 默认选项颜色 */
+        }
+
+        /* 关闭按钮样式 */
+        .close {
+            position: absolute;
+            top: 5px;  
+            right: 20px;
+            color: red;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: darkred;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        function logout() {
+            $.ajax({
+                url: '/logout',
+                type: 'GET',
+                success: function() {
+                    window.location.href = '/';
+                },
+                error: function(error) {
+                    console.error('登出失败:', error);
+                }
+            });
+        }
+
+        function showUploadForm() {
+            var formContainer = document.getElementById('uploadFormContainer');
+            if (formContainer.style.display === 'block') {
+                formContainer.style.display = 'none';
+            } else {
+                formContainer.style.display = 'block';
+                document.getElementById('settingsFormContainer').style.display = 'none';
+                document.getElementById('updateFormContainer').style.display = 'none';
+                hideEditButtons();
+            }
+        }
+
+        function showSettingsForm() {
+            document.getElementById('settingsFormContainer').style.display = 'block';
+            document.getElementById('uploadFormContainer').style.display = 'none';
+            document.getElementById('updateFormContainer').style.display = 'none';
+            hideEditButtons();
+        }
+
+        function showUpdateForm(id, name, groupId, reportId, refreshFrequencyValue, refreshFrequencyUnit, iconPath, datasetId) {
+            document.getElementById('updateFormContainer').style.display = 'block';
+            document.getElementById('uploadFormContainer').style.display = 'none';
+            document.getElementById('settingsFormContainer').style.display = 'none';
+
+            document.getElementById('updateReportId').value = id;
+            document.getElementById('updateReportName').value = name;
+            document.getElementById('updateGroupId').value = groupId;
+            document.getElementById('updateReportIdInput').value = reportId;
+            document.getElementById('updateDatasetId').value = datasetId;
+            document.getElementById('updateRefreshFrequencyValue').value = refreshFrequencyValue;
+            document.getElementById('updateRefreshFrequencyUnit').value = refreshFrequencyUnit;
+            document.getElementById('updateSelectedIcon').src = iconPath;
+            document.getElementById('updateReportIcon').value = iconPath;
+            hideEditButtons();
+        }
+
+        function hideForm() {
+            document.getElementById('uploadFormContainer').style.display = 'none';
+            document.getElementById('settingsFormContainer').style.display = 'none';
+            document.getElementById('updateFormContainer').style.display = 'none';
+            hideEditButtons();
+        }
+
+        function parseReportUrl() {
+            const reportUrl = document.getElementById('reportUrl').value;
+            const urlPattern = /groups\/([a-f0-9\-]+)\/reports\/([a-f0-9\-]+)/;
+            const match = reportUrl.match(urlPattern);
+
+            if (match) {
+                const groupId = match[1];
+                const reportId = match[2];
+
+                document.getElementById('groupId').value = groupId;
+                document.getElementById('reportId').value = reportId;
+
+                fetchDatasetId(groupId, reportId);
+            }
+        }
+
+        function fetchDatasetId(groupId, reportId) {
+            $.ajax({
+                url: '/get_dataset_id',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ group_id: groupId, report_id: reportId }),
+                success: function(response) {
+                    ////console.log("Response from server:", response);  // Debug log
+                    if (response.success) {
+                        document.getElementById('datasetId').value = response.dataset_id;
+                    } else {
+                        alert('获取数据集ID失败：' + response.message);
+                    }
+                },
+                error: function(error) {
+                    console.error('获取数据集ID出错:', error);
+                }
+            });
+        }
+
+        function parseUpdateReportUrl() {
+            const reportUrl = document.getElementById('updateUrl').value;
+            const urlPattern = /groups\/([a-f0-9\-]+)\/reports\/([a-f0-9\-]+)/;
+            const match = reportUrl.match(urlPattern);
+
+            if (match) {
+                const groupId = match[1];
+                const reportId = match[2];
+
+                document.getElementById('updateGroupId').value = groupId;
+                document.getElementById('updateReportIdInput').value = reportId;
+
+                fetchDatasetId(groupId, reportId, true);
+            }
+        }
+
+        function fetchDatasetId(groupId, reportId, isUpdate = false) {
+            $.ajax({
+                url: '/get_dataset_id',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ group_id: groupId, report_id: reportId }),
+                success: function(response) {
+                    //console.log("Response from server:", response);  // Debug log
+                    if (response.success) {
+                        const datasetId = response.dataset_id;
+                        if (isUpdate) {
+                            document.getElementById('updateDatasetId').value = datasetId;
+                        } else {
+                            document.getElementById('datasetId').value = datasetId;
+                        }
+                    } else {
+                        alert('获取数据集ID失败：' + response.message);
+                    }
+                },
+                error: function(error) {
+                    console.error('获取数据集ID出错:', error);
+                }
+            });
+        }
+
+        function toggleEdit() {
+            const editButtons = document.querySelectorAll('.edit-button');
+            const cancelEditButton = document.getElementById('editButton');
+            const editButton = document.getElementById('editButton');
+
+            editButtons.forEach(button => {
+                if (button.classList.contains('d-none')) {
+                    button.classList.remove('d-none');
+                } else {
+                    button.classList.add('d-none');
+                }
+            });
+
+            if (cancelEditButton.classList.contains('d-none')) {
+                cancelEditButton.classList.remove('d-none');
+                editButton.classList.add('d-none');
+            } else {
+                cancelEditButton.classList.add('d-none');
+                editButton.classList.remove('d-none');
+            }
+        }
+
+        function hideEditButtons() {
+            const editButtons = document.querySelectorAll('.edit-button');
+            const cancelEditButton = document.getElementById('cancelEditButton');
+            const editButton = document.getElementById('editButton');
+
+            editButtons.forEach(button => {
+                button.classList.add('d-none');
+            });
+
+            cancelEditButton.classList.add('d-none');
+            editButton.classList.remove('d-none');
+        }
+
+        function parseReportUrl() {
+            const reportUrl = document.getElementById('reportUrl').value;
+            const urlPattern = /groups\/([a-f0-9\-]+)\/reports\/([a-f0-9\-]+)/;
+            const match = reportUrl.match(urlPattern);
+
+            if (match) {
+                const groupId = match[1];
+                const reportId = match[2];
+
+                document.getElementById('groupId').value = groupId;
+                document.getElementById('reportId').value = reportId;
+
+                fetchDatasetId(groupId, reportId);
+            }
+        }
+
+        function openReport(groupId, reportId) {
+            const url = `/report?group_id=${groupId}&report_id=${reportId}`;
+            window.open(url, '_blank');
+        }
+
+        function updateReport(event) {
+            event.preventDefault();
+
+            const reportId = document.getElementById('updateReportId').value; // 使用id进行更新
+            var formData = new FormData(document.getElementById('updateForm'));
+            //console.log("formData:", formData);
+
+            $.ajax({
+                url: '/update_report',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        hideForm();
+                        location.reload();
+                    } else {
+                        alert('更新失败：' + response.message);
+                    }
+                },
+                error: function(error) {
+                    console.error('更新报表出错:', error);
+                }
+            });
+        }
+        function deleteReport(id) {
+            if (confirm("确定要删除此报表吗？")) {
+                $.ajax({
+                    url: `/delete_report/${id}`,
+                    type: 'DELETE',
+                    success: function(response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            alert('删除失败：' + response.message);
+                        }
+                    },
+                    error: function(error) {
+                        console.error('删除报表出错:', error);
+                    }
+                });
+            }
+        }
+
+
+        function togglePermissions() {
+            const permissionsContainer = document.getElementById('permissionsContainer');
+            const isVisible = permissionsContainer.style.display === 'block';
+
+            // 隐藏所有容器
+            document.getElementById('uploadFormContainer').style.display = 'none';
+            document.getElementById('settingsFormContainer').style.display = 'none';
+            document.getElementById('updateFormContainer').style.display = 'none';
+
+            // 显示或隐藏权限容器
+            permissionsContainer.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible) {
+                loadPermissions();
+            }
+        }
+
+        function loadPermissions() {
+            $.get('/get_permissions?' + new Date().getTime(), function(data) {
+                const permissionsTableBody = document.getElementById('permissionsTableBody');
+                permissionsTableBody.innerHTML = '';
+                data.forEach(permission => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${permission.id}</td>
+                        <td>${permission.email}</td>
+                        <td>${permission.addButton}</td>
+                        <td>${permission.editButton}</td>
+                        <td>${permission.manageButton}</td>
+                        <td>${permission.publishButton}</td>
+                        <td>
+                            <button class="btn btn-primary" onclick="showEditForm(${permission.id}, '${permission.email}')">编辑</button>
+                            <button class="btn btn-danger" onclick="deletePermission(${permission.id})">删除</button>
+                        </td>
+                    `;
+                    permissionsTableBody.appendChild(row);
+                });
+            });
+        }
+        function addPermission(event) {
+            event.preventDefault();
+            const form = document.getElementById('addPermissionForm');
+            const formData = new FormData(form);
+
+            $.ajax({
+                url: '/add_permission',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                        loadPermissions();
+                        form.reset();
+                    } else {
+                        alert('添加权限失败：' + response.message);
+                    }
+                },
+                error: function(error) {
+                    console.error('添加权限出错:', error);
+                }
+            });
+        }
+
+        function showEditForm(id, email) {
+            // 显示编辑表单
+            document.getElementById('editPermissionFormContainer').style.display = 'block';
+            document.getElementById('editPermissionId').value = id;
+            document.getElementById('editPermissionEmail').value = email;
+
+            // 获取当前用户的权限并填充到表单中
+            $.get(`/get_permission/${id}`, function(permission) {
+                $('#editPermissionAdd').val(permission.addButton);
+                $('#editPermissionEdit').val(permission.editButton);
+                $('#editPermissionManage').val(permission.manageButton);
+                $('#editPermissionPublish').val(permission.publishButton);
+            });
+        }
+
+        function hideEditForm() {
+            document.getElementById('editPermissionFormContainer').style.display = 'none';
+        }
+
+        function updatePermission(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('editPermissionId').value; // 权限 ID
+            const email = document.getElementById('editPermissionEmail').value; // 用户邮箱
+            const canAdd = document.getElementById('editPermissionAdd').value; // 新增权限
+            const canEdit = document.getElementById('editPermissionEdit').value; // 编辑权限
+            const canManage = document.getElementById('editPermissionManage').value; // 管理权限
+            const canPublish = document.getElementById('editPermissionPublish').value; // 发布权限
+
+            const requestData = {
+                id: id, // 确保这里的 id 是有效的
+                email: email,
+                addButton: canAdd,
+                editButton: canEdit,
+                manageButton: canManage,
+                publishButton: canPublish
+            };
+
+            $.ajax({
+                url: '/update_permission',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(requestData),
+                success: function(response) {
+                    if (response.success) {
+                        hideEditForm();
+                        loadPermissions();
+                        location.reload();
+                    } else {
+                        alert('更新权限失败：' + response.message);
+                    }
+                },
+                error: function(error) {
+                    console.error('更新权限出错:', error);
+                }
+            });
+        }
+
+        function deletePermission(id) {
+            if (confirm("确定要删除此权限吗？")) {
+                $.ajax({
+                    url: `/delete_permission/${id}`,
+                    type: 'DELETE',
+                    success: function(response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            alert('删除权限失败：' + response.message);
+                        }
+                    },
+                    error: function(error) {
+                        console.error('删除权限出错:', error);
+                        alert('删除权限时发生错误，请稍后再试。');
+                    }
+                });
+            }
+        }
+
+
+        function refreshReport(groupId, datasetId) {
+            var statusBox = document.getElementById('status-' + datasetId);
+
+            // 显示状态框
+            statusBox.classList.add('show-status');
+            statusBox.innerText = '刷新中...';
+
+            $.ajax({
+                url: '/refresh_dataset',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ group_id: groupId, dataset_id: datasetId }),
+                success: function(response) {
+                    if (response.success) {
+                        // 触发状态检查
+                        checkStatusUntilComplete(groupId, datasetId, statusBox);
+                    } else {
+                        statusBox.innerText = '刷新失败: ' + response.message;
+                        hideStatusBoxAfterDelay(statusBox, 5000); // 5秒后隐藏
+                    }
+                },
+                error: function(error) {
+                    statusBox.innerText = '刷新失败';
+                    hideStatusBoxAfterDelay(statusBox, 5000); // 5秒后隐藏
+                }
+            });
+        }
+
+        function checkStatusUntilComplete(groupId, datasetId, statusBox) {
+            var interval = setInterval(function() {
+                checkRefreshStatus(groupId, datasetId, function(isCompleted, status) {
+                    if (isCompleted) {
+                        clearInterval(interval); // 停止轮询
+                        statusBox.innerText = status === 'Completed' ? '刷新成功' : '刷新失败';
+                        hideStatusBoxAfterDelay(statusBox, 5000); // 5秒后隐藏
+                    }
+                });
+            }, 5000); // 每隔5秒检查一次状态
+        }
+
+        function hideStatusBoxAfterDelay(statusBox, delay) {
+            setTimeout(function() {
+                statusBox.classList.remove('show-status');
+            }, delay);
+        }
+
+        function checkRefreshStatus(groupId, datasetId, callback) {
+            $.ajax({
+                url: '/get_refresh_status',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ group_id: groupId, dataset_id: datasetId }),
+                success: function(response) {
+                    if (response.success) {
+                        var isCompleted = response.status === 'Completed' || response.status === 'Failed';
+                        callback(isCompleted, response.status);
+                    } else {
+                        console.error('刷新状态获取失败：', response.message);
+                    }
+                },
+                error: function(error) {
+                    console.error('获取刷新状态出错:', error);
+                }
+            });
+        }
+        $(document).ready(function() {
+
+            loadPermissions();
+            // 检查用户权限
+            $.get('/check_permission', function(response) {
+                //console.log('Permission check response:', response); // 调试日志
+                if (response.has_permission) {
+                    if (response.can_add) {
+                        $('#addButton').removeClass('d-none');
+                    } else {
+                        $('#addButton').addClass('d-none');
+                    }
+
+                    if (response.can_edit) {
+                        $('#editButton').removeClass('d-none');
+                    } else {
+                        $('#editButton').addClass('d-none');
+                    }
+
+                    if (response.can_manage) {
+                        $('#manageButton').removeClass('d-none');
+                    } else {
+                        $('#manageButton').addClass('d-none');
+                    }
+
+                    if (response.can_publish) {
+                        $('#publishButton').removeClass('d-none');
+                    } else {
+                        $('#publishButton').addClass('d-none');
+                    }
+                } else {
+                    //console.log('User does not have permission');
+                    // 隐藏所有按钮
+                    $('#addButton').addClass('d-none');
+                    $('#editButton').addClass('d-none');
+                    $('#manageButton').addClass('d-none');
+                    $('#publishButton').addClass('d-none');
+                }
+            }).fail(function() {
+                //console.log('Failed to check permissions');
+                // 隐藏所有按钮，默认安全策略
+                $('#addButton').addClass('d-none');
+                $('#editButton').addClass('d-none');
+                $('#manageButton').addClass('d-none');
+                $('#publishButton').addClass('d-none');
+            });
+
+            // 显示编辑按钮
+            $('#editButton').click(function() {
+                toggleEdit();
+            });
+
+            // 隐藏编辑按钮
+            // $('#editButton').click(function() {
+            //     toggleEdit();
+            // });
+
+            // 加载图标
+            $.get('/get_icons', function(data) {
+                var $customOptions = $('#customOptions');
+                var $updateCustomOptions = $('#updateCustomOptions');
+
+                data.sort();
+
+                data.forEach(function(icon) {
+                    var relativeIconPath = 'static/Icon/' + icon.replace(/\\/g, '/');
+                    $customOptions.append('<div class="custom-option" data-value="' + icon + '"><img src="' + relativeIconPath + '" alt=""></div>');
+                    $updateCustomOptions.append('<div class="custom-option" data-value="' + icon + '"><img src="' + relativeIconPath + '" alt=""></div>');
+                });
+
+                // $('#updateReportIcon').change(function() {
+                //     var selectedOption = $(this).find('option:selected');
+                //     var imgSrc = selectedOption.data('imgSrc');
+                //     $('#updateSelectedIcon').attr('src', imgSrc);
+                // });
+
+                $('.custom-option').on('click', function() {
+                    var imgSrc = $(this).find('img').attr('src');
+                    $('#selectedIcon').attr('src', imgSrc);
+                    $('#reportIcon').val($(this).data('value'));
+                    $('#customOptions').hide();
+                });
+
+                // 显示图标选项
+                $('#customSelect').on('click', function() {
+                    $('#customOptions').toggle();
+                });
+                
+                // 点击其他地方时隐藏图标选项
+                $(document).on('click', function(e) {
+                    if (!$(e.target).closest('.custom-select-container').length) {
+                        $('#customOptions').hide();
+                    }
+                });
+
+
+                // 编辑表单中的图标选择
+                $updateCustomOptions.on('click', '.custom-option', function() {
+                    var imgSrc = $(this).find('img').attr('src');
+                    $('#updateSelectedIcon').attr('src', imgSrc);
+                    $('#updateReportIcon').val($(this).data('value'));
+                    $('#updateCustomOptions').hide();
+                });
+
+                $('#updateCustomSelect').on('click', function() {
+                    $('#updateCustomOptions').toggle();
+                });
+
+                $(document).on('click', function(e) {
+                    if (!$(e.target).closest('.custom-select-container').length) {
+                        $('#updateCustomOptions').hide();
+                    }
+                });
+            });
+
+            $('#uploadForm').on('submit', function(event) {
+                event.preventDefault();
+
+                var formData = new FormData(this);
+                //console.log("formData:", formData);
+
+                $.ajax({
+                    url: '/upload_report',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            hideForm();
+                            location.reload();
+                            location.reload();
+                        } else {
+                            alert('上传失败：' + response.message);
+                        }
+                    },
+                    error: function(error) {
+                        console.error('上传报表出错:', error);
+                    }
+                });
+            });
+
+            $('#updateForm').on('submit', function(event) {
+                event.preventDefault();
+
+                var formData = new FormData(this);
+                //console.log("formData:", formData);
+
+                $.ajax({
+                    url: '/update_report',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            hideForm();
+                            location.reload();
+                            
+                        } else {
+                            alert('更新失败：' + response.message);
+                        }
+                    },
+                    error: function(error) {
+                        console.error('更新报表出错:', error);
+                    }
+                });
+            });
+
+            // 绑定权限管理按钮的事件
+            $('#manageButton').click(function() {
+                togglePermissions();
+            });
+
+            // 初始化权限管理相关的操作
+            loadPermissions();
+            
+            // 获取工作区列表并填充到下拉列表中
+            $.get('/get_workspaces', function(response) {
+                if (response.success) {
+                    const workspaceSelect = $('#workspaceSelect');
+                    workspaceSelect.empty(); // 清除现有的所有选项
+                    workspaceSelect.append('<option value="" disabled selected class="placeholder-option">请选择一个工作区</option>'); // 添加提示选项
+                    response.workspaces.forEach(workspace => {
+                        const option = $('<option>').val(workspace.id).text(workspace.name);
+                        workspaceSelect.append(option);
+                    });
+                } else {
+                    alert('获取工作区失败：' + response.message);
+                }
+            }).fail(function() {
+                alert('获取工作区时出错');
+            });
+
+            // 显示或隐藏模态框
+            $('#publishButton').click(function() {
+                $('#publishModal').show(); // 确保这里是.show()
+            });
+
+            // 关闭模态框
+            $('.close').click(function() {
+                $('#publishModal').hide();
+            });
+
+            // 提交发布表单
+            $('#publishForm').on('submit', function(event) {
+                event.preventDefault();
+                var formData = new FormData(this);
+
+                fetch('/publish_report', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        addPublishStatusRow(data.report_name, 'Succeeded', data.report_url); // 更新发布状态
+                        $('#publishModal').hide();
+                    } else {
+                        addPublishStatusRow('N/A', 'Failed', '');
+                    }
+                })
+                .catch(error => {
+                    console.error('发布报表时出错:', error);
+                    addPublishStatusRow('N/A', 'Failed', '');
+                });
+            });
+
+            function addPublishStatusRow(reportName, status, reportUrl) {
+                const tableBody = document.getElementById('publishStatusTableBody');
+                const newRow = `
+                    <tr>
+                        <td>${reportName}</td>
+                        <td>${status}</td>
+                        <td><a href="${reportUrl}" target="_blank">${reportUrl}</a></td>
+                    </tr>
+                `;
+                tableBody.innerHTML += newRow;
+            }
+        });
+
+        // 发布按钮点击事件
+        $('#publishButton').click(function() {
+            $('#publishModal').show();
+        });
+
+
+    </script>
+</body>
+</html>

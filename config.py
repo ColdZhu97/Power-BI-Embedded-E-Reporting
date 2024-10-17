@@ -1,7 +1,7 @@
 import os
 
 class BaseConfig(object):
-    SQLALCHEMY_DATABASE_URI = 'mssql+pyodbc://E-Report:123456@cnhuasolar1608/E-Report?driver=ODBC+Driver+17+for+SQL+Server'
+    SQLALCHEMY_DATABASE_URI = 'SQLALCHEMY_DATABASE_URI' 数据库地址
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SCOPE_BASE = ['https://analysis.windows.net/powerbi/api/.default']
     POWER_BI_API_URL = 'https://api.powerbi.com/'

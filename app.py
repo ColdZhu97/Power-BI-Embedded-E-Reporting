@@ -271,7 +271,7 @@ def login():
         else:
             try:
                 response = requests.get(
-                    'http://cnhuam0itpoc81:4200/gateway/eureka/data/api/services/v1.0.0/HR_Base/tp_employee_base_info/query',
+                    'User account verification API URL', #替换为用户验证的API URL
                     params={'ntid': ntid}
                 )
                 response.raise_for_status()
@@ -317,7 +317,7 @@ def change_password():
     else:
         try:
             response = requests.get(
-                'http://cnhuam0itpoc81:4200/gateway/eureka/data/api/services/v1.0.0/HR_Base/tp_employee_base_info/query',
+                'User account verification API URL', #替换为用户验证的API URL
                 params={'ntid': ntid}
             )
             response.raise_for_status()
